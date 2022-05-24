@@ -1,0 +1,104 @@
+---
+
+stages:
+  - sonar-analyze
+  - sonar-check
+  - build
+  - lint
+  - deploy
+  - notify
+
+variables:
+  CONTAINER_IMAGE: ${DOCKER_REGISTRY_URL}/${CI_PROJECT_NAMESPACE}/${CI_PROJECT_NAME}:r${CI_PIPELINE_ID}
+
+include: 
+  - project: 'ci-cd-developers/gitlab-pipelines'
+    file: 'sonarqube/sonarqube-analyze-maven.yml'
+  - project: 'ci-cd-developers/gitlab-pipelines'
+    file: 'sonarqube/sonarqube-check.yml'
+  - project: 'ci-cd-developers/gitlab-pipelines'
+    file: 'docker-build/docker-build-template.yml'
+  - project: 'ci-cd-developers/gitlab-pipelines'
+    file: 'kubernetes-lint/kube-stage-lint-template.yml'
+  - project: 'ci-cd-developers/gitlab-pipelines'
+    file: 'kubernetes-lint/kube-prod-lint-template.yml'
+  - project: 'ci-cd-developers/gitlab-pipelines'
+    file: 'kubernetes-deploy/stage-deploy-template.yml'
+  - project: 'ci-cd-developers/gitlab-pipelines'
+    file: 'kubernetes-deploy/prod-deploy-template.yml'
+  - project: 'ci-cd-developers/gitlab-pipelines'
+    file: 'notify/telegram-notify.yml'
+
+sonar-analyze:
+  tags:
+    - technodom
+  only:
+    refs:
+      - master
+  except:
+      - branch
+    
+sonar-check:
+  tags:
+    - technodom
+  only:
+    refs:
+      - master
+  except:
+      - branch
+    
+docker-build:
+  tags: 
+    - technodom
+  only:
+    refs:
+      - master
+  except:
+      - branch
+
+kube-stage-lint:
+  tags:
+    - technodom
+  only:
+    refs:
+      - master
+  except:
+      - branch
+
+kube-prod-lint:
+  tags:
+    - technodom
+  only:
+    refs:
+      - master
+  except:
+      - branch
+  
+kube-stage-deploy:
+  tags:
+    - technodom
+  only:
+    refs:
+      - master
+  except:
+      - branch
+
+kube-prod-deploy:
+  tags:
+    - technodom
+  only:
+    refs:
+      - master
+  except:
+      - branch
+  when: manual
+
+notify-failure:
+  tags:
+    - technodom
+  only:
+    refs:
+      - master
+  except:
+      - branch
+

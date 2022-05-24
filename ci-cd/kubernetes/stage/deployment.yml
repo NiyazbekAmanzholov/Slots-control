@@ -1,0 +1,61 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: Slots-control
+  namespace: Slots-control-stage
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: Slots-control
+      version: 'v1'
+  template:
+    metadata:
+      labels:
+        app: Slots-control
+        version: 'v1'
+    spec:
+      containers:
+        - name: Slots-control
+          image: harbor.technodom.kz/gitlab-group/Slots-control:version1
+          resources:
+            requests:
+              memory: '1Gi'
+              cpu: '1'
+            limits:
+              memory: '1Gi'
+              cpu: '1'
+          imagePullPolicy: Always
+          ports:
+            - name: http
+              containerPort: 8080
+          volumeMounts:
+            - name: tz-config
+              mountPath: /etc/timezone
+            - name: lt-config
+              mountPath: /etc/localtime
+      imagePullSecrets:
+        - name: harbor-pull-secret
+          containerPort: 8080
+      restartPolicy: Always
+      volumes:
+        - name: tz-config
+          hostPath:
+            path: /etc/timezone
+        - name: lt-config
+          hostPath:
+            path: /etc/localtime
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: Slots-control
+  namespace: Slots-control-stage
+spec:
+  selector:
+    app: Slots-control
+  ports:
+    - name: http
+      port: 8080
+
